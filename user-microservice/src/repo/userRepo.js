@@ -2,19 +2,21 @@ module.exports = (mongoClient, {serverHelper}) => {
     const {encodedPassword} = serverHelper
 
     function createIndex() {
-        mongoClient.collection('users').createIndex('username', { unique: true })
-        mongoClient.createCollection('users', {strict: true}, (err, res) => {
-            if (err) {
-                return console.log(err)
-            }
-            mongoClient.collection('users').createIndex('username', {unique: true})
+        mongoClient.createCollection('users', (error, collection)=> {
+            mongoClient.createCollection('users', (err) => {
+                if (err) {
+                    return console.log(err)
+                }
+                mongoClient.collection('users').createIndex('username', {unique: true})
+            })
         })
+
     }
 
     createIndex()
     const addUser = (user) => {
-        const {username, password} = user
-        const encodedPass = encodedPassword(password)
+        const { username, name, isAdmin, createTime } = user
+        const encodedPass = encodedPassword(user.password)
 
         return new Promise((resolve, reject) => {
             mongoClient.collection('users').insertOne({username, name, isAdmin, encodedPass, createTime}, (err, data) => {
@@ -39,17 +41,16 @@ module.exports = (mongoClient, {serverHelper}) => {
             mongoClient.collection('users').findOne({username, password}, {name: 1, username: 1}, (err, data) => {
                 if(err) {
                     reject(new Error(err))
-                } else {
-                    const {username, name, createTime, _id} = data
-                    const user = {username, name, createTime, _id}
-
-                    resolve(user)
                 }
+                else if (data) {
+                        const { name, username, createTime, _id } = data
+                        const user = { name, username, createTime, _id }
+                        resolve(user)
+                    } else {
+                        reject(new Error('username or password doesn\'t match'))
+                    }
+                })
             })
-        })
+        }
+        return { userLogin, addUser }
     }
-
-    return {
-        userLogin, addUser
-    }
-}
