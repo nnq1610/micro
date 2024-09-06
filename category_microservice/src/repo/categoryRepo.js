@@ -9,9 +9,10 @@ module.exports = function (mongoClient, options) {
             mongoClient.collection('categories').createIndex('name', { unique: true })
         })
     }
+
     createIndex()
     const addCategory = (category) => {
-      category.createBy = new ObjectId(category.createBy)
+        category.createBy = new ObjectId(category.createBy)
         mongoClient.collection('categories').insertOne(category, (err, data) => {
             if (err) reject(new Error(err))
             else {
@@ -24,21 +25,22 @@ module.exports = function (mongoClient, options) {
             }
         })
     }
-}
-const getCategoryById = (id) => {
-    return new Promise((resolve, reject) => {
-        mongoClient.collection('categories').findOne({ _id: new ObjectId(id) }, (err, data) => {
-            err ? reject(new Error(err)) : resolve(data)
-        })
-    })
-}
-const deleteCategory = (id) => {
-    return new Promise((resolve, reject) => {
-        mongoClient.collection('categories').remove({ _id: new ObjectId(id) }, (err, data) => {
-            mongoClient.collection('categories').remove({ _id: new ObjectId(id) }, (err) => {
-                err ? reject(new Error(err)) : resolve('ok')
+
+    const getCategoryById = (id) => {
+        return new Promise((resolve, reject) => {
+            mongoClient.collection('categories').findOne({ _id: new ObjectId(id) }, (err, data) => {
+                err ? reject(new Error(err)) : resolve(data)
             })
         })
-    })
-    return { deleteCategory, getCategoryById, addCategory }
+    }
+    const deleteCategory = (id) => {
+        return new Promise((resolve, reject) => {
+            mongoClient.collection('categories').remove({ _id: new ObjectId(id) }, (err, data) => {
+                mongoClient.collection('categories').remove({ _id: new ObjectId(id) }, (err) => {
+                    err ? reject(new Error(err)) : resolve('ok')
+                })
+            })
+        })
+        return { deleteCategory, getCategoryById, addCategory }
+    }
 }

@@ -47,16 +47,33 @@ const errorCode = {
 }
 const serverHelper = () => {
     const jwt = require('jsonwebtoken')
+    const bcrypt = require('bcrypt');
+
     const {shakey } = serverSettings
 
-    function encodedPassword(password) {
-        return password
-    }
-    function validateToken(token) {
+    async function encodePassword(password) {
+        const saltRounds = 10;
         try {
-            jwt.verify(token, shakey)
+            const hash = await bcrypt.hash(password, saltRounds);
+            return hash
+        } catch (err) {
+            console.error('Error hashing password:', err);
+            return null
+
+        }
+    }
+    async function   validateToken(token) {
+        try {
+             await jwt.verify(token, shakey)
         } catch(ex) {
             return null
         }
     }
+
+    function getUserToken(user) {
+        return jwt.sign({user}, shakey, {expiresIn: '24h'})
+    }
+
+    return {encodePassword, validateToken, getUserToken}
 }
+module.exports = { dbSettings, serverHelper: serverHelper(), serverSettings, errorCode }

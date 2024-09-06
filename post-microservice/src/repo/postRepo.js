@@ -57,14 +57,9 @@ module.exports = (mongoClient, options) => {
 
   const getPostByIdCategory = (id) => {
     return new Promise((resolve, reject) => {
-      const posts = []
-      function forEach (p) {
-        posts.push(p)
-      }
-      function cb (err) {
-        err ? reject(new Error(err)) : resolve(posts)
-      }
-      mongoClient.collection('posts').find({ 'categories': { $elemMatch: { $eq: new ObjectId(id) } } }).forEach(forEach, cb)
+      mongoClient.collection('posts').find({ 'categories': { $elemMatch: { $eq: new ObjectId(id) } } }).toArray((err,data) => {
+        err ? reject(new Error(err)) : resolve(data)
+      })
     })
   }
   const deletePost = (id) => {
